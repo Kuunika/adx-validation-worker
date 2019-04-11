@@ -4,9 +4,17 @@ import { config } from 'dotenv'; config(); //initialize right there the configur
 import { readFileSync } from 'fs';
 import { QueueMessage } from './types';
 import { PayloadSchema } from './schemas';
+import { connectToDatabase } from './datasource';
+import { Logger } from './utils';
 import * as Joi from 'joi';
+import {
+  recordStartMigration,
+  getClientId,
+  recordStructureValidationStatus,
+}
+  from './helpers';
 
-amqp.connect('amqp://localhost', function (error: Error, connection: Connection) {
+amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: Error, connection: Connection) {
   connection.createChannel(function (error: Error, channel: Channel) {
     var queueName = process.env.AVW_QUEUE_NAME || "DHIS2_VALIDATION_QUEUE";
     channel.assertQueue(queueName, { durable: true });
@@ -14,11 +22,28 @@ amqp.connect('amqp://localhost', function (error: Error, connection: Connection)
     channel.consume(queueName, async function (message: Message | null) {
       if (message) {
         const queueMessage: QueueMessage = JSON.parse(message.content.toString());
+        const logger = new Logger(queueMessage.channelId);
+        const sequelize = await connectToDatabase(
+          process.env.AVW_DATABASE_HOST || '',
+          process.env.AVW_DATABASE || '',
+          process.env.AVW_DATABASE_USERNAME || '',
+          process.env.AVW_DATABASE_PASSWORD || ''
+        );
+        const clientId = await getClientId(sequelize, queueMessage.clientId);
+
+        const migration = await recordStartMigration(sequelize, clientId);
+
         const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
         const payload = JSON.parse(readFileSync(payloadFile).toString());
         const { error } = Joi.validate(payload, PayloadSchema);
-        if (error) {
-          console.log(error);
+
+        if (!error) {
+          await recordStructureValidationStatus(sequelize, migration.get('id'), true);
+          logger.info('Payload passed structure validation validation');
+          //TODO: start off on the other validation - authorization
+        } else {
+          await recordStructureValidationStatus(sequelize, migration.get('id'), false);
+          logger.info('Payload failed structure validation, sending email');
           //TODO: Might wanna send an email at this point
         }
       }
