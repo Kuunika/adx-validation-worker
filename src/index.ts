@@ -2,7 +2,7 @@ import * as  amqp from 'amqplib/callback_api';
 import { Channel, Connection, Message } from 'amqplib/callback_api';
 import { config } from 'dotenv'; config(); //initialize right there the configuration
 import { readFileSync } from 'fs';
-import { QueueMessage } from './types';
+import { QueueMessage } from './interfaces';
 import { PayloadSchema } from './schemas';
 import { connectToDatabase } from './datasource';
 import { Logger } from './utils';
