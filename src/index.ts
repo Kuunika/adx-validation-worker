@@ -12,7 +12,7 @@ import {
   getClientId,
   recordStructureValidationStatus,
 }
-  from './helpers';
+  from './modules';
 
 amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: Error, connection: Connection) {
   connection.createChannel(function (error: Error, channel: Channel) {
