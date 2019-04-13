@@ -24,9 +24,9 @@ amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: 
         const queueMessage: QueueMessage = JSON.parse(message.content.toString());
         const logger = new Logger(queueMessage.channelId);
         const sequelize = await connectToDatabase(
-          process.env.AVW_DATABASE_HOST || '',
+          process.env.AVW_DATABASE_HOST || 'localhost',
           process.env.AVW_DATABASE || '',
-          process.env.AVW_DATABASE_USERNAME || '',
+          process.env.AVW_DATABASE_USERNAME || 'username',
           process.env.AVW_DATABASE_PASSWORD || ''
         );
         const clientId = await getClientId(sequelize, queueMessage.clientId);
