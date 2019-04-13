@@ -1,4 +1,4 @@
-export interface FacilityDataValue {
+export interface FacilityPayloadDataValue {
   "product-code": string,
   "value": number
 }
