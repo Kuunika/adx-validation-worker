@@ -2,7 +2,7 @@ import * as  amqp from 'amqplib/callback_api';
 import { Channel, Connection, Message } from 'amqplib/callback_api';
 import { config } from 'dotenv'; config(); //initialize right there the configuration
 import { readFileSync } from 'fs';
-import { QueueMessage } from './interfaces';
+import { QueueMessage, PostPayload } from './interfaces';
 import { PayloadSchema } from './schemas';
 import { connectToDatabase } from './datasource';
 import { Logger } from './utils';
@@ -13,7 +13,8 @@ import {
   recordStructureValidationStatus,
   createMappedPayload,
   persistMigrationDataElements,
-  sendToEmailQueue
+  sendToEmailQueue,
+  sendToMigrationQueue
 }
   from './helpers';
 
@@ -39,7 +40,7 @@ amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: 
           const migration = await recordStartMigration(sequelize, clientId);
 
           const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
-          const payload = JSON.parse(readFileSync(payloadFile).toString());
+          const payload: PostPayload = JSON.parse(readFileSync(payloadFile).toString());
           const { error } = Joi.validate(payload, PayloadSchema);
 
           if (!error) {
@@ -48,7 +49,8 @@ amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: 
             const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id);
             const s = await persistMigrationDataElements(sequelize, migrationDataElements);
             if (s) {
-              console.log(`${s.length} ready for migrating`);
+              logger.info(`${s.length} ready for migrating`);
+              sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
             }
           } else {
             await recordStructureValidationStatus(sequelize, migration.get('id'), false);
@@ -59,7 +61,7 @@ amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: 
               'validation',
               queueMessage.channelId,
               clientId,
-              'Payload failed structure validation'
+              payload.description
             );
           }
         } else {
