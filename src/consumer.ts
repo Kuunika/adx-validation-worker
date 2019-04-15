@@ -5,6 +5,7 @@ import {
   getClientId,
   recordStartMigration,
   recordStructureValidationStatus,
+  recordValidationStatus,
   createMappedPayload,
   persistMigrationDataElements,
   sendToEmailQueue,
@@ -32,6 +33,7 @@ export default async function (sequelize: Sequelize, logger: Logger, queueMessag
       const s = await persistMigrationDataElements(sequelize, migrationDataElements);
       if (s) {
         logger.info(`${s.length} ready for migrating`);
+        recordValidationStatus(sequelize, migration.get('id'), true);
         sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
       }
     } else {

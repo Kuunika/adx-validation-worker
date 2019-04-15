@@ -21,6 +21,7 @@ amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: 
           process.env.AVW_DATABASE_USERNAME || '',
           process.env.AVW_DATABASE_PASSWORD || ''
         );
+
         //Actual implementation
         queueConsumer(sequelize, logger, queueMessage);
       }

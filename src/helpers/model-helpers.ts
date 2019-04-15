@@ -34,6 +34,15 @@ export async function recordStructureValidationStatus(sequelize: Sequelize, migr
   );
 }
 
+export async function recordValidationStatus(sequelize: Sequelize, migrationId: number, passed: boolean) {
+  const field: string = passed ? 'valuesValidatedAt' : 'valuesFailedValidationAt';
+  const MigrationModel = await createMigrationModel(sequelize);
+  await MigrationModel.update(
+    { [field]: moment(new Date()).format('YYYY-MM-DD HH:mm:ss') },
+    { returning: true, where: { id: migrationId } }
+  );
+}
+
 export async function getFacilityData(sequelize: Sequelize, facilityCode: string): Promise<FacilityData | undefined> {
   const facilityModel = await createFacilityModel(sequelize);
   return facilityModel.findOne({
