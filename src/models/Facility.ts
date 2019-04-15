@@ -15,6 +15,6 @@ const options = {
   timestamps: false
 }
 
-export const createProductModel = async (
+export const createFacilityModel = async (
   sequelize: Sequelize
 ): Promise<any> => await sequelize.define(tableName, fields, options); 

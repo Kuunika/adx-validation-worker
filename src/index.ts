@@ -7,6 +7,7 @@ import { PayloadSchema } from './schemas';
 import { connectToDatabase } from './datasource';
 import { Logger } from './utils';
 import * as Joi from 'joi';
+const utils = require('utils')._;
 import {
   recordStartMigration,
   getClientId,
@@ -34,12 +35,17 @@ amqp.connect(process.env.AVW_QUEUE_HOST || 'amqp://localhost', function (error: 
         const migration = await recordStartMigration(sequelize, clientId);
 
         const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
-        const payload = JSON.parse(readFileSync(payloadFile).toString());
+        const payloadFileContent = utils.tryRead(payloadFile);
+        if (!payloadFileContent) {
+          logger.info('failed to read the contents of the payload file specified');
+          return;
+        }
+        const payload = JSON.parse(payloadFileContent);
         const { error } = Joi.validate(payload, PayloadSchema);
 
         if (!error) {
           await recordStructureValidationStatus(sequelize, migration.get('id'), true);
-          logger.info('Payload passed structure validation validation');
+          logger.info('Payload passed structure validation');
           //TODO: start off on the other validation - authorization
         } else {
           await recordStructureValidationStatus(sequelize, migration.get('id'), false);
