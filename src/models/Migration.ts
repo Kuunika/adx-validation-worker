@@ -1,7 +1,7 @@
 import { Sequelize, Model } from "sequelize";
 const sequelize = require("sequelize");
 
-const tableName = 'migration'
+const tableName = 'migration';
 
 const fields = {
   uploadedAt: sequelize.STRING,
@@ -17,13 +17,13 @@ const fields = {
   totalFailedElements: sequelize.BIGINT(11),
   migrationCompletedAt: sequelize.STRING,
   clientId: sequelize.BIGINT(11)
-}
+};
 
 const options = {
   freezeTableName: true,
   tableName,
   timestamps: false
-}
+};
 
 export const createMigrationModel = async (
   sequelize: Sequelize

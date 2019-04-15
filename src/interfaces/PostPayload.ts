@@ -1,7 +1,7 @@
 import { FacilityPayloadData } from ".";
 
 export interface PostPayload {
-  "description": string,
-  "reporting-period": string,
-  "facilities": Array<FacilityPayloadData>
+  "description": string;
+  "reporting-period": string;
+  "facilities": FacilityPayloadData[];
 }

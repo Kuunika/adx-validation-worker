@@ -22,12 +22,12 @@ export async function getClientId(sequelize: Sequelize, clientName: string): Pro
   const clientModel = await createClientModel(sequelize);
   return clientModel.findOne({
     where: { name: clientName }
-  }).then((client: any) => client.get('id')).catch((error: Error) => console.log(error.message))
+  }).then((client: any) => client.get('id')).catch((error: Error) => console.log(error.message));
 }
 
 export async function recordStructureValidationStatus(sequelize: Sequelize, migrationId: number, passed: boolean) {
   const field: string = passed ? 'structureValidatedAt' : 'structureFailedValidationAt';
-  const MigrationModel = await createMigrationModel(sequelize)
+  const MigrationModel = await createMigrationModel(sequelize);
   await MigrationModel.update(
     { [field]: moment(new Date()).format('YYYY-MM-DD HH:mm:ss') },
     { returning: true, where: { id: migrationId } }
@@ -41,7 +41,7 @@ export async function getFacilityData(sequelize: Sequelize, facilityCode: string
   }).then((facility: any) => ({
     organizationUnitCode: facility.get('DHIS2OrganizationalUnitCode'),
     facilityId: facility.get('id')
-  })).catch((error: Error) => console.log(`Org ${error.message}`))
+  })).catch((error: Error) => console.log(`Org ${error.message}`));
 }
 
 export async function getProductData(sequelize: Sequelize, productCode: string): Promise<ProductData | undefined> {
@@ -50,15 +50,15 @@ export async function getProductData(sequelize: Sequelize, productCode: string):
     where: { productCode }
   })
     .then((product: any) => ({ dataElementCode: product.get('dataElementCode'), productId: product.get('id') }))
-    .catch((error: Error) => console.log(error.message))
+    .catch((error: Error) => console.log(error.message));
 }
 
-export async function persistMigrationDataElements(sequelize: Sequelize, migrationDataElements: Array<MigrationDataElement>): Promise<Array<MigrationDataElement> | undefined> {
+export async function persistMigrationDataElements(sequelize: Sequelize, migrationDataElements: MigrationDataElement[]): Promise<MigrationDataElement[] | undefined> {
   const migrationDataElementsModel = await createMigrationDataElementModel(sequelize);
   return migrationDataElementsModel.bulkCreate(migrationDataElements).catch((error: Error) => console.log(error.message));
 }
 
-export async function persistValidationFailures(sequelize: Sequelize, validationFailures: Array<ValidationFailure>): Promise<Array<ValidationFailure | undefined>> {
+export async function persistValidationFailures(sequelize: Sequelize, validationFailures: ValidationFailure[]): Promise<Array<ValidationFailure | undefined>> {
   const validationFailureModel = await createValidationFailureModel(sequelize);
   return validationFailureModel.bulkCreate(validationFailures).catch((error: Error) => console.log(error.message));
 }

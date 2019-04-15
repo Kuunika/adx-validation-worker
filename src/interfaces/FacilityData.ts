@@ -1,4 +1,4 @@
 export interface FacilityData {
-  facilityId: number,
-  organizationUnitCode: string
+  facilityId: number;
+  organizationUnitCode: string;
 }

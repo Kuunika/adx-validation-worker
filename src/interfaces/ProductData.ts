@@ -1,4 +1,4 @@
 export interface ProductData {
-  productId: number,
-  dataElementCode: string,
-};
+  productId: number;
+  dataElementCode: string;
+}
