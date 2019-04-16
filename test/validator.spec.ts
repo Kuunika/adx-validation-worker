@@ -1,7 +1,7 @@
 import { connectToDatabase } from './database-connection';
 import { expect } from 'chai';
 import * as testData from './fake-payload.json';
-import { writeFileSync, unlinkSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { QueueMessage } from '../src/interfaces';
 import 'mocha';
 import { config } from 'dotenv'; config();
@@ -62,5 +62,6 @@ describe('Payload validation', async function () {
     await queueConsumer(sequelize, logger, message);
     const migration = await getMigrations(sequelize);
     expect(Boolean(migration.dataValues.id)).to.equal(true);
+    expect(migration.dataValues.clientId).to.equal(1);
   });
 })

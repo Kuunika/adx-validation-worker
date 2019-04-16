@@ -40,17 +40,7 @@ export default async function (sequelize: Sequelize, logger: Logger, queueMessag
 
   const { error } = Joi.validate(payload, PayloadSchema);
 
-  if (!error) {
-    await recordStructureValidationStatus(sequelize, migration.get('id'), true);
-    logger.info('Payload passed structure validation validation');
-    const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id);
-    const s = await persistMigrationDataElements(sequelize, migrationDataElements);
-    if (s) {
-      logger.info(`${s.length} ready for migrating`);
-      recordValidationStatus(sequelize, migration.get('id'), true);
-      sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
-    }
-  } else {
+  if (error) {
     await recordStructureValidationStatus(sequelize, migration.get('id'), false);
     logger.info('Payload failed structure validation, sending email');
     sendToEmailQueue(
@@ -61,6 +51,16 @@ export default async function (sequelize: Sequelize, logger: Logger, queueMessag
       clientId,
       payload.description
     );
+    return;
   }
-
+  await recordStructureValidationStatus(sequelize, migration.get('id'), true);
+  logger.info('Payload passed structure validation validation');
+  const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id);
+  const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
+  if (!dataElementsToMigrate) {
+    return
+  }
+  logger.info(`${dataElementsToMigrate.length} ready for migrating`);
+  recordValidationStatus(sequelize, migration.get('id'), true);
+  sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
 }

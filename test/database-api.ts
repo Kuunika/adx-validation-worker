@@ -73,27 +73,10 @@ export async function clearElements(sequelize: Sequelize) {
   const productModel = await createProductModel(sequelize);
   const facilityModel = await createFacilityModel(sequelize);
   const migrationDataElementModel = await createMigrationDataElementModel(sequelize);
-  await migrationModel.destroy({
-    where: {},
-    truncate: true
-  })
-  await clientModel.destroy({
-    where: {},
-    truncate: true
-  })
-  await facilityModel.destroy({
-    where: {},
-    truncate: true
-  })
-  await productModel.destroy({
-    where: {},
-    truncate: true
-  })
-
-  await migrationDataElementModel.destroy({
-    where: {},
-    truncate: true
-  })
+  const clearModels = async (models: any[]) => {
+    for (const model of models) model.destroy({ truncate: true })
+  }
+  clearModels([migrationModel, clientModel, productModel, facilityModel, migrationDataElementModel]);
 }
 
 export async function getMigrations(sequelize: Sequelize) {
