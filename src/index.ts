@@ -14,11 +14,17 @@ import {
 }
   from './modules';
 
-const main = () => {
+const main = async () => {
   const host = process.env.AVW_QUEUE_HOST || 'amqp://localhost';
+  const sequelize = await connectToDatabase(
+    process.env.AVW_DATABASE_HOST || 'localhost',
+    process.env.AVW_DATABASE || '',
+    process.env.AVW_DATABASE_USERNAME || 'username',
+    process.env.AVW_DATABASE_PASSWORD || ''
+  );
   amqp.connect(host, function (error: Error, connection: Connection) {
     connection.createChannel(function (error: Error, channel: Channel) {
-      var queueName = process.env.AVW_QUEUE_NAME || "DHIS2_VALIDATION_QUEUE";
+      const queueName = process.env.AVW_QUEUE_NAME || "DHIS2_VALIDATION_QUEUE";
       channel.assertQueue(queueName, { durable: true });
       console.log("[*] Waiting for messages on %s. To exit press CTRL+C", queueName);
       channel.consume(queueName, async function (message: Message | null) {
@@ -27,12 +33,7 @@ const main = () => {
         }
         const queueMessage: QueueMessage = JSON.parse(message.content.toString());
         const logger = new Logger(queueMessage.channelId);
-        const sequelize = await connectToDatabase(
-          process.env.AVW_DATABASE_HOST || 'localhost',
-          process.env.AVW_DATABASE || '',
-          process.env.AVW_DATABASE_USERNAME || 'username',
-          process.env.AVW_DATABASE_PASSWORD || ''
-        );
+
         const clientId = await getClientId(sequelize, queueMessage.clientId);
 
         const migration = await recordStartMigration(sequelize, clientId);
