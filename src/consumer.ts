@@ -10,7 +10,7 @@ import {
   persistMigrationDataElements,
   sendToEmailQueue,
   sendToMigrationQueue
-} from './helpers';
+} from './modules';
 import { PayloadSchema } from './schemas';
 import * as Joi from 'joi';
 import { readFileSync } from 'fs';
