@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
 import { Logger } from './utils';
-import { QueueMessage, PostPayload } from './interfaces';
+import { QueueMessage } from './interfaces';
 import {
   getClientId,
   recordStartMigration,
@@ -13,7 +13,6 @@ import {
 } from './modules';
 import { PayloadSchema } from './schemas';
 import * as Joi from 'joi';
-import { readFileSync } from 'fs';
 const utils = require('utils')._;
 
 export default async function (sequelize: Sequelize, logger: Logger, queueMessage: QueueMessage) {
