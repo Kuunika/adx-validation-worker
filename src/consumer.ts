@@ -14,41 +14,53 @@ import {
 import { PayloadSchema } from './schemas';
 import * as Joi from 'joi';
 import { readFileSync } from 'fs';
+const utils = require('utils')._;
 
 export default async function (sequelize: Sequelize, logger: Logger, queueMessage: QueueMessage) {
-
   const clientId = await getClientId(sequelize, queueMessage.clientId);
 
-  if (clientId) {
-    const migration = await recordStartMigration(sequelize, clientId);
+  if (!clientId) {
+    logger.info('Failed to find client in the validation worker, exiting')
+    return
+  }
 
-    const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
-    const payload: PostPayload = JSON.parse(readFileSync(payloadFile).toString());
-    const { error } = Joi.validate(payload, PayloadSchema);
+  const migration = await recordStartMigration(sequelize, clientId);
+  if (!migration) {
+    logger.info('Failed to find migration, exiting')
+    return
+  }
 
-    if (!error) {
-      await recordStructureValidationStatus(sequelize, migration.get('id'), true);
-      logger.info('Payload passed structure validation validation');
-      const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id);
-      const s = await persistMigrationDataElements(sequelize, migrationDataElements);
-      if (s) {
-        logger.info(`${s.length} ready for migrating`);
-        recordValidationStatus(sequelize, migration.get('id'), true);
-        sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
-      }
-    } else {
-      await recordStructureValidationStatus(sequelize, migration.get('id'), false);
-      logger.info('Payload failed structure validation, sending email');
-      sendToEmailQueue(
-        migration.id,
-        true,
-        'validation',
-        queueMessage.channelId,
-        clientId,
-        payload.description
-      );
+  const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
+  const payloadFileContent = utils.tryRead(payloadFile);
+  if (!payloadFileContent) {
+    logger.info('failed to read the contents of the payload file specified');
+    return;
+  }
+  const payload = JSON.parse(payloadFileContent);
+
+  const { error } = Joi.validate(payload, PayloadSchema);
+
+  if (!error) {
+    await recordStructureValidationStatus(sequelize, migration.get('id'), true);
+    logger.info('Payload passed structure validation validation');
+    const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id);
+    const s = await persistMigrationDataElements(sequelize, migrationDataElements);
+    if (s) {
+      logger.info(`${s.length} ready for migrating`);
+      recordValidationStatus(sequelize, migration.get('id'), true);
+      sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
     }
   } else {
-    logger.info('Failed to find client in the validation worker, exiting');
+    await recordStructureValidationStatus(sequelize, migration.get('id'), false);
+    logger.info('Payload failed structure validation, sending email');
+    sendToEmailQueue(
+      migration.id,
+      true,
+      'validation',
+      queueMessage.channelId,
+      clientId,
+      payload.description
+    );
   }
+
 }
