@@ -1,3 +1,3 @@
 export * from './databaseOperations';
-export * from './queue';
-export * from './validation';
+export * from './queueOperations';
+export * from './validationOperations';

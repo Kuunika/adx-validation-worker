@@ -53,7 +53,7 @@ export default async function (sequelize: Sequelize, logger: Logger, queueMessag
     return;
   }
   await recordStructureValidationStatus(sequelize, migration.get('id'), true);
-  logger.info('Payload passed structure validation validation');
+  logger.info('Payload passed structure validation');
   const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id);
   const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
   if (!dataElementsToMigrate) {
