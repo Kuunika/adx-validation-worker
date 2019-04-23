@@ -1,0 +1,15 @@
+{
+  "description": "Testing",
+  "reporting-period": "201808",
+  "facilities": [
+    {
+      "facility-code": "facility-cod",
+      "values": [
+        {
+          "product-code": "product-code",
+          "value": 123
+        }
+      ]
+    }
+  ]
+}

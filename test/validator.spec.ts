@@ -1,11 +1,14 @@
-import { connectToDatabase } from './database-connection';
+import { connectToDatabase } from './setup/database/connection';
 import { expect } from 'chai';
-import * as testData from './fake-payload.json';
+import * as validPayload from './fixtures/valid-payload.json';
+import * as invalidFacilityCodePayload from './fixtures/invalid-facility-code-payload.json';
+import * as invalidProductCodePayload from './fixtures/invalid-product-code-payload.json';
+import * as invalidStructurePayload from './fixtures/invalid-structure-payload.json';
 import { writeFileSync } from 'fs';
 import { QueueMessage } from '../src/interfaces';
 import 'mocha';
 import { config } from 'dotenv'; config();
-import { createMigration } from './database-api';
+import { createMigration } from './setup/database/populate';
 import { Logger } from '../src/utils';
 import queueConsumer from '../src/consumer';
 import { Sequelize } from 'sequelize';
@@ -14,8 +17,8 @@ import {
   createFacility,
   createProduct,
   clearElements,
-  getMigrations
-} from './database-api';
+  getMigration
+} from './setup/database/populate';
 
 describe('Payload validation', async function () {
   let sequelize: Sequelize;
@@ -24,6 +27,12 @@ describe('Payload validation', async function () {
   const file = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${channelId}.adx`.replace(' ', '');
   let message: QueueMessage;
   const logger = new Logger(channelId);
+
+  const triggerMigration = async (payload: any) => {
+    await writeFileSync(file, JSON.stringify(payload));
+    await queueConsumer(sequelize, logger, message);
+    return getMigration(sequelize);
+  }
 
   before(async function () {
     //connect to test db
@@ -34,34 +43,50 @@ describe('Payload validation', async function () {
       process.env.AVW_TEST_DATABASE_PASSWORD || 'password'
     );
 
-    //fake migration file
-    await writeFileSync(file, JSON.stringify(testData));
-
     //create the message
     message = {
       channelId,
       clientId,
       migrationId: await createMigration(await sequelize)
     }
+    await clearElements(sequelize);
+  })
 
-    //make sure the database is cleared
+  beforeEach(async function () {
     await clearElements(sequelize);
     //populate the database with fake data
     await createClient(sequelize);
     await createFacility(sequelize);
     await createProduct(sequelize);
+  });
+
+  afterEach(async function () {
+    await clearElements(sequelize);
   })
 
   after(async function () {
-    await clearElements(sequelize);
     setTimeout(function () {
       process.exit(0);
     }, 2000)
-  })
-  it("performs all the necessary validations a given payload file", async function () {
-    await queueConsumer(sequelize, logger, message);
-    const migration = await getMigrations(sequelize);
-    expect(Boolean(migration.dataValues.id)).to.equal(true);
-    expect(migration.dataValues.clientId).to.equal(1);
+  });
+  it("Fails on structure validation", async function () {
+    const migration = await triggerMigration(invalidStructurePayload)
+    expect(migration.dataValues.structureValidatedAt).to.equal(null);
+  });
+
+  it("Fails on invalid facility code", async function () {
+    const migration = await triggerMigration(invalidFacilityCodePayload)
+    expect(migration.dataValues.valuesValidatedAt).to.equal(null);
+  });
+
+  it("Fails on invalid product code", async function () {
+    const migration = await triggerMigration(invalidProductCodePayload)
+    expect(migration.dataValues.valuesValidatedAt).to.equal(null);
+  });
+
+  it("Validates only when all conditions have been met", async function () {
+    const migration = await triggerMigration(validPayload)
+    expect(migration.dataValues.valuesFailedValidationAt).to.equal(null);
+    expect(migration.dataValues.structureFailedValidationAt).to.equal(null);
   });
 })

@@ -4,7 +4,7 @@ import {
   createFacilityModel,
   createProductModel,
   createMigrationDataElementModel
-} from '../src/models';
+} from '../../../src/models';
 import { Sequelize } from 'sequelize';
 export async function createMigration(sequelize: Sequelize) {
   try {
@@ -79,7 +79,7 @@ export async function clearElements(sequelize: Sequelize) {
   clearModels([migrationModel, clientModel, productModel, facilityModel, migrationDataElementModel]);
 }
 
-export async function getMigrations(sequelize: Sequelize) {
+export async function getMigration(sequelize: Sequelize) {
   const migrationModel = await createMigrationModel(sequelize)
   return migrationModel.findOne({ where: {} });
 }

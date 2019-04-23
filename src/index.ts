@@ -24,7 +24,6 @@ const main = async () => {
         if (!message) {
           return
         }
-
         const queueMessage: QueueMessage = JSON.parse(message.content.toString());
         const logger = new Logger(queueMessage.channelId);
         //Actual implementation
