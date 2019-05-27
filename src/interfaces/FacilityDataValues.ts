@@ -1,4 +1,4 @@
-export interface FacilityDataValue {
-  "product-code": string,
-  "value": number
+export interface FacilityPayloadDataValue {
+  "product-code": string;
+  "value": number;
 }

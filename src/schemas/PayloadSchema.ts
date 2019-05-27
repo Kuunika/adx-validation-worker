@@ -15,4 +15,4 @@ export const PayloadSchema: ObjectSchema = Joi.object().keys({
       )
     })
   )
-})
+});

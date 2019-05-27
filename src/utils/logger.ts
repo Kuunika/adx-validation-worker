@@ -39,12 +39,12 @@ export class Logger {
       encrypted: Boolean(process.env.AVW_PUSHER_ENCRYPTED) || true
     });
   }
-  public info(message: string) {
-    this._logger.info(message)
+  info(message: string) {
+    this._logger.info(message);
     this._pusherLogger.trigger(this.channelId, 'my-event', message);
   }
 
-  public error(message: string) {
-    this._logger.error(message)
+  error(message: string) {
+    this._logger.error(message);
   }
 }
