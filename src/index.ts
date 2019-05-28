@@ -27,7 +27,8 @@ const main = async () => {
         const queueMessage: QueueMessage = JSON.parse(message.content.toString());
         const logger = new Logger(queueMessage.channelId);
         //Actual implementation
-        queueConsumer(sequelize, logger, queueMessage);
+        await queueConsumer(sequelize, logger, queueMessage);
+        await channel.ack(message);
       }, { noAck: false });
     });
   });

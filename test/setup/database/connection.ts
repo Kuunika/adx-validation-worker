@@ -33,7 +33,6 @@ export const connectToDatabase = async (
 
   const sequelize = await new Sequelize(database, username, password, options);
   checkConnectionStatus(sequelize);
-
   return sequelize;
 };
 

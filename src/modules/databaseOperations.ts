@@ -15,7 +15,7 @@ export async function recordStartMigration(sequelize: Sequelize, clientId: numbe
   const migrationModel = await createMigrationModel(sequelize);
 
   return await migrationModel.create({ clientId }).catch((error: Error) => {
-    console.log("malu", error, error.message);
+    console.log(error.message);
   });
 }
 
@@ -49,8 +49,6 @@ export async function getFacilityData(
   facilityCode: string
 ): Promise<FacilityData | undefined> {
   const facilityModel = await createFacilityModel(sequelize);
-
-  console.log(facilityCode);
   return facilityModel.findOne({
     where: { facilityCode }
   }).then((facility: any) => ({
