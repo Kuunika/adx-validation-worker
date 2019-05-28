@@ -1,28 +1,34 @@
-import { Sequelize, Model } from "sequelize";
-const sequelize = require("sequelize");
+import {
+  ModelOptions,
+  ModelAttributes,
+  Sequelize,
+  BIGINT,
+  DATE
+} from 'sequelize';
 
-const tableName = 'migration';
+const tableName = 'Migration';
 
-const fields = {
-  uploadedAt: sequelize.STRING,
-  structureValidatedAt: sequelize.STRING,
-  structureFailedValidationAt: sequelize.STRING,
-  elementsAuthorizationAt: sequelize.STRING,
-  elementsFailedAuthorizationAt: sequelize.STRING,
-  valuesValidatedAt: sequelize.STRING,
-  valuesFailedValidationAt: sequelize.STRING,
-  reportDispatchedAt: sequelize.STRING,
-  totalMigratedElements: sequelize.BIGINT(11),
-  totalDataElements: sequelize.BIGINT(11),
-  totalFailedElements: sequelize.BIGINT(11),
-  migrationCompletedAt: sequelize.STRING,
-  clientId: sequelize.BIGINT(11)
+const fields: ModelAttributes = {
+  uploadedAt: DATE,
+  structureValidatedAt: DATE,
+  structureFailedValidationAt: DATE,
+  elementsAuthorizationAt: DATE,
+  elementsFailedAuthorizationAt: DATE,
+  valuesValidatedAt: DATE,
+  valuesFailedValidationAt: DATE,
+  reportDispatchedAt: DATE,
+  totalMigratedElements: BIGINT,
+  totalDataElements: BIGINT,
+  totalFailedElements: BIGINT,
+  migrationCompletedAt: DATE,
+  clientId: BIGINT,
+  createdAt: DATE,
 };
 
-const options = {
+const options: ModelOptions = {
   freezeTableName: true,
   tableName,
-  timestamps: false
+  timestamps: false,
 };
 
 export const createMigrationModel = async (

@@ -1,23 +1,29 @@
 import {
-  Sequelize
+  ModelOptions,
+  ModelAttributes,
+  Sequelize,
+  STRING,
+  BOOLEAN,
+  BIGINT,
+  DATE
 } from 'sequelize';
-const sequelize = require("sequelize");
 
-const tableName = 'migrationdataelements';
+const tableName = 'MigrationDataElements';
 
-const fields = {
-  organizationUnitCode: sequelize.STRING,
-  dataElementCode: sequelize.STRING,
-  migrationId: sequelize.BIGINT(11),
-  productId: sequelize.BIGINT(11),
-  facilityId: sequelize.BIGINT(11),
-  value: sequelize.BIGINT(11),
-  isProcessed: sequelize.BOOLEAN,
-  migratedAt: sequelize.STRING,
-  reportingPeriod: sequelize.STRING,
+const fields: ModelAttributes = {
+  productId: BIGINT,
+  migrationId: BIGINT,
+  facilityId: BIGINT,
+  value: BIGINT,
+  dataElementCode: STRING,
+  organizationUnitCode: STRING,
+  isProcessed: BOOLEAN,
+  migratedAt: DATE,
+  reportingPeriod: STRING,
+  createdAt: DATE,
 };
 
-const options = {
+const options: ModelOptions = {
   freezeTableName: true,
   tableName,
   timestamps: false,
@@ -25,4 +31,5 @@ const options = {
 
 export const createMigrationDataElementModel = async (
   sequelize: Sequelize
+  // tslint:disable-next-line: no-any
 ): Promise<any> => await sequelize.define(tableName, fields, options);

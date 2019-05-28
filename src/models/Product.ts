@@ -6,7 +6,9 @@ const tableName = 'products';
 const fields = {
   productCode: sequelize.STRING,
   dataElementCode: sequelize.STRING,
-  openLMISCode: sequelize.STRING
+  openLMISCode: sequelize.STRING,
+  createdAt: sequelize.DATE,
+  updatedAt: sequelize.DATE,
 };
 
 const options = {
@@ -17,4 +19,5 @@ const options = {
 
 export const createProductModel = async (
   sequelize: Sequelize
-): Promise<any> => await sequelize.define(tableName, fields, options); 
+  // tslint:disable-next-line: no-any
+): Promise<any> => await sequelize.define(tableName, fields, options);

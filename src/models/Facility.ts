@@ -6,7 +6,9 @@ const tableName = 'facilities';
 const fields = {
   facilityCode: sequelize.STRING,
   DHIS2OrganizationalUnitCode: sequelize.STRING,
-  openLMISFacilityCode: sequelize.STRING
+  openLMISFacilityCode: sequelize.STRING,
+  createdAt: sequelize.DATE,
+  updatedAt: sequelize.DATE,
 };
 
 const options = {
@@ -17,4 +19,4 @@ const options = {
 
 export const createFacilityModel = async (
   sequelize: Sequelize
-): Promise<any> => await sequelize.define(tableName, fields, options); 
+): Promise<any> => await sequelize.define(tableName, fields, options);
