@@ -9,9 +9,10 @@ export function sendToEmailQueue(
   clientId: number,
   description: string
 ) {
+
   const tortoise = new Tortoise(process.env.AVW_EMAIL_QUEUE_HOST || 'amqp://localhost');
   tortoise
-    .queue(process.env.AVW_EMAIL_QUEUE_NAME, { durable: false })
+    .queue(process.env.AVW_EMAIL_QUEUE_NAME, { durable: true })
     .publish({ migrationId, flag, source, channelId, clientId, description });
 }
 
@@ -24,6 +25,6 @@ export function sendToMigrationQueue(
 ) {
   const tortoise = new Tortoise(process.env.AVW_MIGRATION_QUEUE_HOST || 'amqp://localhost');
   tortoise
-    .queue(process.env.AVW_MIGRATION_QUEUE_NAME, { durable: false })
+    .queue(process.env.AVW_MIGRATION_QUEUE_NAME, { durable: true })
     .publish({ migrationId, channelId, clientId, description });
 }

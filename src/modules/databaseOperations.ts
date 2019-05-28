@@ -13,9 +13,10 @@ import * as moment from 'moment';
 //model helpers
 export async function recordStartMigration(sequelize: Sequelize, clientId: number) {
   const migrationModel = await createMigrationModel(sequelize);
-  return migrationModel.create({
-    clientId
-  }).catch((error: Error) => console.log(error.message));
+
+  return await migrationModel.create({ clientId }).catch((error: Error) => {
+    console.log(error.message);
+  });
 }
 
 export async function getClientId(sequelize: Sequelize, clientName: string): Promise<number | undefined> {
@@ -43,7 +44,10 @@ export async function recordValidationStatus(sequelize: Sequelize, migrationId: 
   );
 }
 
-export async function getFacilityData(sequelize: Sequelize, facilityCode: string): Promise<FacilityData | undefined> {
+export async function getFacilityData(
+  sequelize: Sequelize,
+  facilityCode: string
+): Promise<FacilityData | undefined> {
   const facilityModel = await createFacilityModel(sequelize);
   return facilityModel.findOne({
     where: { facilityCode }
@@ -62,7 +66,9 @@ export async function getProductData(sequelize: Sequelize, productCode: string):
     .catch((error: Error) => console.log(error.message));
 }
 
-export async function persistMigrationDataElements(sequelize: Sequelize, migrationDataElements: MigrationDataElement[]): Promise<MigrationDataElement[] | undefined> {
+export async function persistMigrationDataElements(
+  sequelize: Sequelize, migrationDataElements: MigrationDataElement[]
+): Promise<MigrationDataElement[] | undefined> {
   const migrationDataElementsModel = await createMigrationDataElementModel(sequelize);
   return migrationDataElementsModel.bulkCreate(migrationDataElements).catch((error: Error) => console.log(error.message));
 }

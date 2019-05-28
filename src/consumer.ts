@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
 import { Logger } from './utils';
 import { QueueMessage } from './interfaces';
+
 import {
   getClientId,
   recordStartMigration,
@@ -11,11 +12,16 @@ import {
   sendToEmailQueue,
   sendToMigrationQueue
 } from './modules';
+
 import { PayloadSchema } from './schemas';
 import * as Joi from 'joi';
 const utils = require('utils')._;
 
-export default async function (sequelize: Sequelize, logger: Logger, queueMessage: QueueMessage) {
+export default async function (
+  sequelize: Sequelize,
+  logger: Logger,
+  queueMessage: QueueMessage
+) {
   const clientId = await getClientId(sequelize, queueMessage.clientId);
 
   if (!clientId) {
