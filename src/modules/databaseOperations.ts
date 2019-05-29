@@ -57,10 +57,22 @@ export async function getFacilityData(
   })).catch((error: Error) => console.log(`Org ${error.message}`));
 }
 
-export async function getProductData(sequelize: Sequelize, productCode: string): Promise<ProductData | undefined> {
+export async function getProductData(sequelize: Sequelize, productCode: string, clientName: string): Promise<ProductData | undefined> {
+  //OpenLMIS or the rest of the World
+  let where = {};
+  switch (clientName) {
+    case 'openlmis':
+      where = { openLMISCode: productCode }
+      break;
+    case 'dhamis':
+      where = { openLMISCode: productCode }
+      break;
+    default:
+      where = { productCode }
+  }
   const productModel = await createProductModel(sequelize);
   return productModel.findOne({
-    where: { productCode }
+    where
   })
     .then((product: any) => ({ dataElementCode: product.get('dataElementCode'), productId: product.get('id') }))
     .catch((error: Error) => console.log(error.message));
