@@ -6,3 +6,4 @@ export * from './FacilityData';
 export * from './ProductData';
 export * from './ValidationFailure';
 export * from './QueueMessage';
+export * from './LogQueueMessage';

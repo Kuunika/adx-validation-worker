@@ -1,3 +1,5 @@
+import { LogQueueMessage } from "../interfaces";
+
 const Tortoise = require('tortoise');
 
 //{ migrationId, flag, source, channelId, clientId, description }
@@ -27,4 +29,13 @@ export function sendToMigrationQueue(
   tortoise
     .queue(process.env.AVW_MIGRATION_QUEUE_NAME, { durable: true })
     .publish({ migrationId, channelId, clientId, description });
+}
+
+export function sendToLogQueue(
+  logQueueMessage: LogQueueMessage
+) {
+  const tortoise = new Tortoise(process.env.AVW_LOG_QUEUE_HOST || 'amqp://localhost');
+  tortoise
+    .queue(process.env.AVW_LOG_QUEUE_NAME, { durable: true })
+    .publish(logQueueMessage);
 }
