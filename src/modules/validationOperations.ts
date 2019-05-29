@@ -7,7 +7,7 @@ import { getProductData, getFacilityData, persistValidationFailures } from '.';
 import { Sequelize } from 'sequelize';
 import { appendFileSync } from 'fs';
 
-export async function createMappedPayload(sequelize: Sequelize, payload: PostPayload, migrationId: number): Promise<MigrationDataElement[]> {
+export async function createMappedPayload(sequelize: Sequelize, payload: PostPayload, migrationId: number, clientName: string): Promise<MigrationDataElement[]> {
   const { facilities } = payload;
   const fileName = `validation-failed-${Date.now()}.adx`;
   const validationFailures: ValidationFailure[] = [];
@@ -27,7 +27,7 @@ export async function createMappedPayload(sequelize: Sequelize, payload: PostPay
     if (facilityData) {
       const { organizationUnitCode, facilityId } = facilityData;
       for (const facilityValue of facility.values) {
-        const productData = await getProductData(sequelize, facilityValue["product-code"]);
+        const productData = await getProductData(sequelize, facilityValue["product-code"], clientName);
         if (productData) {
           const { dataElementCode, productId } = productData;
           const mappedPayload = {
