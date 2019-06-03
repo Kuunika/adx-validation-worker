@@ -86,5 +86,5 @@ export default async function (
   })
   console.log(`${dataElementsToMigrate.length} ready for migrating`);
   recordValidationStatus(sequelize, migration.get('id'), true);
-  sendToMigrationQueue(migration.id, queueMessage.channelId, clientId, payload.description);
+  sendToMigrationQueue(migration.id, queueMessage.channelId, queueMessage.clientId, payload.description);
 }
