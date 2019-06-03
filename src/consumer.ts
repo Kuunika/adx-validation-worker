@@ -40,9 +40,7 @@ export default async function (
     console.log('Failed to find migration, exiting')
     return
   }
-  console.log(process.env.AVW_LOG_QUEUE_HOST);
   const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
-  console.log(payloadFile)
   const payloadFileContent = utils.tryRead(payloadFile);
   if (!payloadFileContent) {
     logger.info('failed to read the contents of the payload file specified');

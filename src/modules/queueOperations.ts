@@ -25,7 +25,6 @@ export function sendToMigrationQueue(
   clientId: string,
   description: string
 ) {
-  console.log(clientId)
   const tortoise = new Tortoise(process.env.AVW_MIGRATION_QUEUE_HOST || 'amqp://localhost');
   tortoise
     .queue(process.env.AVW_MIGRATION_QUEUE_NAME, { durable: true })
