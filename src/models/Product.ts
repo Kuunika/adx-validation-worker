@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
 const sequelize = require("sequelize");
 
-const tableName = 'products';
+const tableName = 'Products';
 
 const fields = {
   productCode: sequelize.STRING,

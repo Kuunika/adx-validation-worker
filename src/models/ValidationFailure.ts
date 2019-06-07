@@ -3,7 +3,7 @@ import {
 } from 'sequelize';
 const sequelize = require("sequelize");
 
-const tableName = 'validationfailures';
+const tableName = 'Validationfailures';
 
 const fields = {
   migrationId: sequelize.BIGINT(11),

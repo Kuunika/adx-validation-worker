@@ -1,7 +1,7 @@
 import { Sequelize, Model } from "sequelize";
 const sequelize = require("sequelize");
 
-const tableName = 'client';
+const tableName = 'Client';
 
 const fields = {
   name: sequelize.STRING,
