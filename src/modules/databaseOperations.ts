@@ -46,11 +46,21 @@ export async function recordValidationStatus(sequelize: Sequelize, migrationId: 
 
 export async function getFacilityData(
   sequelize: Sequelize,
-  facilityCode: string
+  facilityCode: string,
+  clientName: string
 ): Promise<FacilityData | undefined> {
+  let where = {};
+  switch (clientName) {
+    case 'openlmis':
+      where = { openLMISFacilityCode: facilityCode }
+      break;
+    default:
+      where = { facilityCode }
+  }
   const facilityModel = await createFacilityModel(sequelize);
+  console.log(where);
   return facilityModel.findOne({
-    where: { facilityCode }
+    where
   }).then((facility: any) => ({
     organizationUnitCode: facility.get('DHIS2OrganizationalUnitCode'),
     facilityId: facility.get('id')

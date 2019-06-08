@@ -23,7 +23,7 @@ export async function createMappedPayload(sequelize: Sequelize, payload: PostPay
 
   const mappedPayloads: MigrationDataElement[] = [];
   for (const facility of facilities) {
-    const facilityData = await getFacilityData(sequelize, facility["facility-code"]);
+    const facilityData = await getFacilityData(sequelize, facility["facility-code"], clientName);
     if (facilityData) {
       const { organizationUnitCode, facilityId } = facilityData;
       for (const facilityValue of facility.values) {
