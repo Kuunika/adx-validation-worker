@@ -58,7 +58,6 @@ export async function getFacilityData(
       where = { facilityCode }
   }
   const facilityModel = await createFacilityModel(sequelize);
-  console.log(where);
   return facilityModel.findOne({
     where
   }).then((facility: any) => ({
@@ -93,6 +92,15 @@ export async function persistMigrationDataElements(
 ): Promise<MigrationDataElement[] | undefined> {
   const migrationDataElementsModel = await createMigrationDataElementModel(sequelize);
   return migrationDataElementsModel.bulkCreate(migrationDataElements).catch((error: Error) => console.log(error.message));
+}
+
+export async function updateMigration(sequelize: Sequelize, migrationId: number, field: string, value: any) {
+  //moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+  const MigrationModel = await createMigrationModel(sequelize);
+  await MigrationModel.update(
+    { [field]: value },
+    { returning: true, where: { id: migrationId } }
+  );
 }
 
 export async function persistValidationFailures(sequelize: Sequelize, validationFailures: ValidationFailure[]): Promise<Array<ValidationFailure | undefined>> {

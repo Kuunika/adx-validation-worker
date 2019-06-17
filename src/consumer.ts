@@ -1,7 +1,6 @@
 import { Sequelize } from 'sequelize';
 import { Logger } from './utils';
 import { QueueMessage } from './interfaces';
-import { sendToLogQueue } from './modules';
 
 import {
   getClientId,
@@ -11,7 +10,9 @@ import {
   createMappedPayload,
   persistMigrationDataElements,
   sendToEmailQueue,
-  sendToMigrationQueue
+  sendToMigrationQueue,
+  sendToLogQueue,
+  updateMigration
 } from './modules';
 
 import { PayloadSchema } from './schemas';
@@ -36,6 +37,7 @@ export default async function (
   }
 
   const migration = await recordStartMigration(sequelize, clientId);
+  const migrationId = migration.get('id');
   if (!migration) {
     console.log('Failed to find migration, exiting')
     return
@@ -51,12 +53,12 @@ export default async function (
   const { error } = Joi.validate(payload, PayloadSchema);
   if (error) {
     await recordStructureValidationStatus(sequelize, migration.get('id'), false);
-    sendToLogQueue({
+    await sendToLogQueue({
       ...queueMessageWithClient,
       service,
       description: 'Payload failed structure validation'
     });
-    sendToEmailQueue(
+    await sendToEmailQueue(
       migration.id,
       true,
       'validation',
@@ -67,22 +69,23 @@ export default async function (
     return;
   }
   await recordStructureValidationStatus(sequelize, migration.get('id'), true);
-  sendToLogQueue({
+  await sendToLogQueue({
     ...queueMessageWithClient,
     service,
     description: 'Payload passed structure validation, validating content...'
   })
   const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id, queueMessage.clientId);
+  await updateMigration(sequelize, migrationId, 'totalDataElements', migrationDataElements.length);
+  await updateMigration(sequelize, migrationId, 'uploadedAt', Date.now());
   const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
   if (!dataElementsToMigrate) {
     return
   }
-  sendToLogQueue({
+  await sendToLogQueue({
     ...queueMessageWithClient,
     service,
     description: `${dataElementsToMigrate.length} ready for migrating`
   })
-  console.log(`${dataElementsToMigrate.length} ready for migrating`);
   recordValidationStatus(sequelize, migration.get('id'), true);
   sendToMigrationQueue(migration.id, queueMessage.channelId, queueMessage.clientId, payload.description);
 }

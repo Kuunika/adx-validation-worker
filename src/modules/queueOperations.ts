@@ -2,7 +2,6 @@ import { LogQueueMessage } from "../interfaces";
 
 const Tortoise = require('tortoise');
 
-//{ migrationId, flag, source, channelId, clientId, description }
 export function sendToEmailQueue(
   migrationId: number,
   flag: boolean,
@@ -11,14 +10,12 @@ export function sendToEmailQueue(
   clientId: number,
   description: string
 ) {
-
   const tortoise = new Tortoise(process.env.AVW_EMAIL_QUEUE_HOST || 'amqp://localhost');
   tortoise
     .queue(process.env.AVW_EMAIL_QUEUE_NAME, { durable: true })
     .publish({ migrationId, flag, source, channelId, clientId, description });
 }
 
-//{ migrationId, channelId, clientId, description }
 export function sendToMigrationQueue(
   migrationId: number,
   channelId: string,
@@ -34,8 +31,9 @@ export function sendToMigrationQueue(
 export function sendToLogQueue(
   logQueueMessage: LogQueueMessage
 ) {
+  console.log(logQueueMessage)
   const tortoise = new Tortoise(process.env.AVW_LOG_QUEUE_HOST || 'amqp://localhost');
   tortoise
-    .queue(process.env.AVW_LOG_QUEUE_NAME, { durable: true })
+    .queue(process.env.AVW_LOG_QUEUE_NAME || 'ADX_LOG_WORKER', { durable: true })
     .publish(logQueueMessage);
 }
