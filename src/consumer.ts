@@ -75,9 +75,10 @@ export default async function (
     description: 'Payload passed structure validation, validating content...'
   })
   const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id, queueMessage.clientId);
-  await updateMigration(sequelize, migrationId, 'totalDataElements', migrationDataElements.length);
   await updateMigration(sequelize, migrationId, 'uploadedAt', Date.now());
   const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
+  const totalDataElements = dataElementsToMigrate ? dataElementsToMigrate.length : 0;
+  await updateMigration(sequelize, migrationId, 'totalDataElements', totalDataElements);
   if (!dataElementsToMigrate) {
     return
   }
