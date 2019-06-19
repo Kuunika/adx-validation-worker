@@ -7,3 +7,4 @@ export * from './ProductData';
 export * from './ValidationFailure';
 export * from './QueueMessage';
 export * from './LogQueueMessage';
+export * from './ValidationResult';

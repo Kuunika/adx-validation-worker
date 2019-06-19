@@ -7,7 +7,7 @@ export function sendToEmailQueue(
   flag: boolean,
   source: string,
   channelId: string,
-  clientId: number,
+  clientId: string,
   description: string
 ) {
   const tortoise = new Tortoise(process.env.AVW_EMAIL_QUEUE_HOST || 'amqp://localhost');
@@ -31,7 +31,6 @@ export function sendToMigrationQueue(
 export function sendToLogQueue(
   logQueueMessage: LogQueueMessage
 ) {
-  console.log(logQueueMessage)
   const tortoise = new Tortoise(process.env.AVW_LOG_QUEUE_HOST || 'amqp://localhost');
   tortoise
     .queue(process.env.AVW_LOG_QUEUE_NAME || 'ADX_LOG_WORKER', { durable: true })

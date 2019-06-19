@@ -1,20 +1,22 @@
 import {
   PostPayload,
   MigrationDataElement,
-  ValidationFailure
+  ValidationFailure,
+  ValidationResult
 } from '../interfaces';
 import { getProductData, getFacilityData, persistValidationFailures } from '.';
 import { Sequelize } from 'sequelize';
 import { appendFileSync } from 'fs';
 
-export async function createMappedPayload(sequelize: Sequelize, payload: PostPayload, migrationId: number, clientName: string): Promise<MigrationDataElement[]> {
+export async function createMappedPayload(sequelize: Sequelize, payload: PostPayload, migrationId: number, clientName: string): Promise<ValidationResult> {
   const { facilities } = payload;
   const fileName = `validation-failed-${Date.now()}.adx`;
   const validationFailures: ValidationFailure[] = [];
+  let validationError = false;
 
   const pushToValidationFailures = async function (reason: string) {
     await appendFileSync(`data/${fileName}`, reason);
-    validationFailures.push({
+    await validationFailures.push({
       fileName,
       migrationId,
       reason
@@ -42,15 +44,17 @@ export async function createMappedPayload(sequelize: Sequelize, payload: PostPay
           };
           mappedPayloads.push(mappedPayload);
         } else {
-          pushToValidationFailures(`Failed to find dataElement for ${facilityValue["product-code"]}`);
+          validationError = true;
+          await pushToValidationFailures(`Failed to find dataElement for ${facilityValue["product-code"]}`);
         }
       }
     } else {
-      pushToValidationFailures(`Failed to find organizationUnitCode for ${facility["facility-code"]}`);
+      validationError = true;
+      await pushToValidationFailures(`Failed to find organizationUnitCode for ${facility["facility-code"]}`);
     }
   }
   if (validationFailures.length > 0) {
     await persistValidationFailures(sequelize, validationFailures);
   }
-  return mappedPayloads;
+  return { migrationDataElements: mappedPayloads, validationError };
 }

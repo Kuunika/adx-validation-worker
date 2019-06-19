@@ -61,9 +61,9 @@ export default async function (
     await sendToEmailQueue(
       migration.id,
       true,
-      'validation',
+      'structure_validation',
       queueMessage.channelId,
-      clientId,
+      queueMessage.clientId,
       payload.description
     );
     return;
@@ -74,13 +74,23 @@ export default async function (
     service,
     description: 'Payload passed structure validation, validating content...'
   })
-  const migrationDataElements = await createMappedPayload(sequelize, payload, migration.id, queueMessage.clientId);
+  const { migrationDataElements, validationError } = await createMappedPayload(sequelize, payload, migration.id, queueMessage.clientId);
   await updateMigration(sequelize, migrationId, 'uploadedAt', Date.now());
   const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
-  const totalDataElements = dataElementsToMigrate ? dataElementsToMigrate.length : 0;
-  await updateMigration(sequelize, migrationId, 'totalDataElements', totalDataElements);
   if (!dataElementsToMigrate) {
     return
+  }
+  const totalDataElements = dataElementsToMigrate.length;
+  await updateMigration(sequelize, migrationId, 'totalDataElements', totalDataElements);
+  if (validationError) {
+    await sendToEmailQueue(
+      migration.id,
+      true,
+      'element_validation',
+      queueMessage.channelId,
+      queueMessage.clientId,
+      payload.description
+    );
   }
   await sendToLogQueue({
     ...queueMessageWithClient,
