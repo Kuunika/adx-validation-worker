@@ -97,6 +97,9 @@ export default async function (
     service,
     description: `${dataElementsToMigrate.length} ready for migrating`
   })
+  if (dataElementsToMigrate.length < 1) {
+    return
+  }
   recordValidationStatus(sequelize, migration.get('id'), true);
   sendToMigrationQueue(migration.id, queueMessage.channelId, queueMessage.clientId, payload.description);
 }
