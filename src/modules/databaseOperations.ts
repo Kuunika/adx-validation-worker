@@ -73,12 +73,10 @@ export async function getProductData(sequelize: Sequelize, productCode: string, 
     case 'openlmis':
       where = { openLMISCode: productCode }
       break;
-    case 'dhamis':
-      where = { openLMISCode: productCode }
-      break;
     default:
       where = { productCode }
   }
+  console.log(where);
   const productModel = await createProductModel(sequelize);
   return productModel.findOne({
     where
