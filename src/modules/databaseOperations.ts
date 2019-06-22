@@ -76,7 +76,6 @@ export async function getProductData(sequelize: Sequelize, productCode: string, 
     default:
       where = { productCode }
   }
-  console.log(where);
   const productModel = await createProductModel(sequelize);
   return productModel.findOne({
     where
