@@ -2,7 +2,7 @@ import { ObjectSchema } from 'joi';
 import * as Joi from 'joi';
 
 export const PayloadSchema: ObjectSchema = Joi.object().keys({
-  "description": Joi.string().alphanum().required(),
+  "description": Joi.string().required(),
   "reporting-period": Joi.string().required(),
   "facilities": Joi.array().items(
     Joi.object().keys({
