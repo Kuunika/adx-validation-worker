@@ -16,6 +16,10 @@ const main = async () => {
   );
 
   amqp.connect(host, function (error: Error, connection: Connection) {
+    if (error) {
+      console.log(error.message);
+      return;
+    }
     connection.createChannel(function (error: Error, channel: Channel) {
       let queueName = process.env.AVW_QUEUE_NAME || "DHIS2_VALIDATION_QUEUE";
       channel.assertQueue(queueName, { durable: true });
