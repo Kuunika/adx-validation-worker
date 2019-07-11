@@ -3,6 +3,7 @@
 ## Dependencies
 
 - [NodeJS > v10.12](https://nodejs.org/en/download/ "node")
+- [MySQL v5.5](https://dev.mysql.com/downloads/mysql/ "mysql")
 - [adx-products-populator](https://github.com/BaobabHealthTrust/adx-products-populator)
 
 ## Installation
