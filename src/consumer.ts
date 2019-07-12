@@ -55,8 +55,7 @@ export default async function (
     await recordStructureValidationStatus(sequelize, migration.get('id'), false);
     await sendToLogQueue({
       ...queueMessageWithClient,
-      service,
-      description: 'Payload failed structure validation'
+      message: JSON.stringify({ message: 'Payload failed structure validation', service })
     });
     await sendToEmailQueue(
       migration.id,
@@ -71,10 +70,13 @@ export default async function (
   await recordStructureValidationStatus(sequelize, migration.get('id'), true);
   await sendToLogQueue({
     ...queueMessageWithClient,
-    service,
-    description: 'Payload passed structure validation, validating content...'
+    message: JSON.stringify({ message: 'Payload passed structure validation, validating content', service })
   })
   const { migrationDataElements, validationError } = await createMappedPayload(sequelize, payload, migration.id, queueMessage.clientId);
+  await sendToLogQueue({
+    ...queueMessageWithClient,
+    message: JSON.stringify({ message: 'Finished content validation', service })
+  })
   await updateMigration(sequelize, migrationId, 'uploadedAt', Date.now());
   const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
   if (!dataElementsToMigrate) {
@@ -94,8 +96,7 @@ export default async function (
   }
   await sendToLogQueue({
     ...queueMessageWithClient,
-    service,
-    description: `${dataElementsToMigrate.length} ready for migrating`
+    message: JSON.stringify({ message: `${dataElementsToMigrate.length} ready for migrating`, service })
   })
   if (dataElementsToMigrate.length < 1) {
     return
