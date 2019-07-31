@@ -7,6 +7,7 @@ const fields = {
   facilityCode: sequelize.STRING,
   DHIS2OrganizationalUnitCode: sequelize.STRING,
   openLMISFacilityCode: sequelize.STRING,
+  dhamisFacilityCode: sequelize.STRING,
   createdAt: sequelize.DATE,
   updatedAt: sequelize.DATE,
 };

@@ -36,7 +36,7 @@ export default async function (
     return
   }
 
-  const migration = await recordStartMigration(sequelize, clientId);
+  const migration = await recordStartMigration(sequelize, clientId, queueMessage.channelId);
   const migrationId = migration.get('id');
   if (!migration) {
     console.log('Failed to find migration, exiting')

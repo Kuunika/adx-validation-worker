@@ -3,12 +3,14 @@ import {
   ModelAttributes,
   Sequelize,
   BIGINT,
-  DATE
+  DATE,
+  STRING
 } from 'sequelize';
 
 const tableName = 'Migration';
 
 const fields: ModelAttributes = {
+  channelId: STRING,
   uploadedAt: DATE,
   structureValidatedAt: DATE,
   structureFailedValidationAt: DATE,

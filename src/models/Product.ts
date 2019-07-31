@@ -7,6 +7,7 @@ const fields = {
   productCode: sequelize.STRING,
   dataElementCode: sequelize.STRING,
   openLMISCode: sequelize.STRING,
+  dhamisCode: sequelize.STRING,
   createdAt: sequelize.DATE,
   updatedAt: sequelize.DATE,
 };

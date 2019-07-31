@@ -11,10 +11,10 @@ import { FacilityData, ProductData, MigrationDataElement, ValidationFailure } fr
 import * as moment from 'moment';
 
 //model helpers
-export async function recordStartMigration(sequelize: Sequelize, clientId: number) {
+export async function recordStartMigration(sequelize: Sequelize, clientId: number, channelId: string) {
   const migrationModel = await createMigrationModel(sequelize);
 
-  return await migrationModel.create({ clientId }).catch((error: Error) => {
+  return await migrationModel.create({ clientId, channelId }).catch((error: Error) => {
     console.log(error.message);
   });
 }
@@ -54,6 +54,9 @@ export async function getFacilityData(
     case 'openlmis':
       where = { openLMISFacilityCode: facilityCode }
       break;
+    case 'dhamis':
+      where = { dhamisFacilityCode: facilityCode }
+      break;
     default:
       where = { facilityCode }
   }
@@ -72,6 +75,9 @@ export async function getProductData(sequelize: Sequelize, productCode: string, 
   switch (clientName) {
     case 'openlmis':
       where = { openLMISCode: productCode }
+      break;
+    case 'dhamis':
+      where = { dhamisCode: productCode };
       break;
     default:
       where = { productCode }
