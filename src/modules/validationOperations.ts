@@ -37,7 +37,7 @@ export async function createMappedPayload(
       client: message.clientId,
       migrationId: message.migrationId,
       message: JSON.stringify({
-        message: `validating for facility ${facility["facility-code"]}`,
+        message: `Validating for facility ${facility["facility-code"]}`,
         service: "validation"
       })
     });
