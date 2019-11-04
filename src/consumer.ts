@@ -1,6 +1,6 @@
-import { Sequelize } from 'sequelize';
-import { Logger } from './utils';
-import { QueueMessage } from './interfaces';
+import { Sequelize } from "sequelize";
+import { Logger } from "./utils";
+import { QueueMessage } from "./interfaces";
 
 import {
   getClientId,
@@ -13,94 +13,129 @@ import {
   sendToMigrationQueue,
   sendToLogQueue,
   updateMigration
-} from './modules';
+} from "./modules";
 
-import { PayloadSchema } from './schemas';
-import * as Joi from 'joi';
-const utils = require('utils')._;
+import { PayloadSchema } from "./schemas";
+import * as Joi from "joi";
+const utils = require("utils")._;
 
-export default async function (
+export default async function(
   sequelize: Sequelize,
   logger: Logger,
   queueMessage: QueueMessage
 ) {
-  const service = 'validation';
+  const service = "validation";
   const queueMessageWithClient = {
     ...queueMessage,
     client: queueMessage.clientId
-  }
+  };
   const clientId = await getClientId(sequelize, queueMessage.clientId);
 
   if (!clientId) {
-    console.log('Failed to find client in the validation worker, exiting')
-    return
+    console.log("Failed to find client in the validation worker, exiting");
+    return;
   }
 
-  const migration = await recordStartMigration(sequelize, clientId, queueMessage.channelId);
-  const migrationId = migration.get('id');
+  const migration = await recordStartMigration(
+    sequelize,
+    clientId,
+    queueMessage.channelId
+  );
+  const migrationId = migration.get("id");
   if (!migration) {
-    console.log('Failed to find migration, exiting')
-    return
+    console.log("Failed to find migration, exiting");
+    return;
   }
   const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
   const payloadFileContent = utils.tryRead(payloadFile);
   if (!payloadFileContent) {
-    logger.info('failed to read the contents of the payload file specified');
+    logger.info("failed to read the contents of the payload file specified");
     return;
   }
   const payload = JSON.parse(payloadFileContent);
 
   const { error } = Joi.validate(payload, PayloadSchema);
   if (error) {
-    await recordStructureValidationStatus(sequelize, migration.get('id'), false);
-    await sendToLogQueue({
+    await recordStructureValidationStatus(
+      sequelize,
+      migration.get("id"),
+      false
+    );
+    sendToLogQueue({
       ...queueMessageWithClient,
-      message: JSON.stringify({ message: 'Payload failed structure validation', service })
+      message: JSON.stringify({
+        message: "Payload failed structure validation",
+        service
+      })
     });
-    await sendToEmailQueue(
+    sendToEmailQueue(
       migration.id,
       true,
-      'structure_validation',
+      "structure_validation",
       queueMessage.channelId,
       queueMessage.clientId,
       payload.description
     );
     return;
   }
-  await recordStructureValidationStatus(sequelize, migration.get('id'), true);
-  await sendToLogQueue({
+  await recordStructureValidationStatus(sequelize, migration.get("id"), true);
+  sendToLogQueue({
     ...queueMessageWithClient,
-    message: JSON.stringify({ message: 'Payload passed structure validation, validating content', service })
-  })
-  const { migrationDataElements, validationError } = await createMappedPayload(sequelize, payload, migration.id, queueMessage.clientId);
-  await sendToLogQueue({
+    message: JSON.stringify({
+      message: "Payload passed structure validation, validating content",
+      service
+    })
+  });
+  const { migrationDataElements, validationError } = await createMappedPayload(
+    sequelize,
+    payload,
+    migration.id,
+    queueMessage
+  );
+  sendToLogQueue({
     ...queueMessageWithClient,
-    message: JSON.stringify({ message: 'Finished content validation', service })
-  })
-  await updateMigration(sequelize, migrationId, 'uploadedAt', Date.now());
-  const dataElementsToMigrate = await persistMigrationDataElements(sequelize, migrationDataElements);
+    message: JSON.stringify({ message: "Finished content validation", service })
+  });
+  await updateMigration(sequelize, migrationId, "uploadedAt", Date.now());
+  const dataElementsToMigrate = await persistMigrationDataElements(
+    sequelize,
+    migrationDataElements
+  );
   if (!dataElementsToMigrate) {
-    return
+    return;
   }
   const totalDataElements = dataElementsToMigrate.length;
-  await updateMigration(sequelize, migrationId, 'totalDataElements', totalDataElements);
+  await updateMigration(
+    sequelize,
+    migrationId,
+    "totalDataElements",
+    totalDataElements
+  );
   if (validationError) {
-    await sendToEmailQueue(
+    sendToEmailQueue(
       migration.id,
       true,
-      'element_validation',
+      "element_validation",
       queueMessage.channelId,
       queueMessage.clientId,
       payload.description
     );
   }
-  await sendToLogQueue({
+  sendToLogQueue({
     ...queueMessageWithClient,
-    message: JSON.stringify({ message: `${dataElementsToMigrate.length} ready for migrating`, service })
-  })
+    message: JSON.stringify({
+      message: `${dataElementsToMigrate.length} ready for migrating`,
+      service
+    })
+  });
   if (dataElementsToMigrate.length < 1) {
-    return
+    return;
   }
-  recordValidationStatus(sequelize, migration.get('id'), true);
-  sendToMigrationQueue(migration.id, queueMessage.channelId, queueMessage.clientId, payload.description);
+  recordValidationStatus(sequelize, migration.get("id"), true);
+  sendToMigrationQueue(
+    migration.id,
+    queueMessage.channelId,
+    queueMessage.clientId,
+    payload.description
+  );
 }
