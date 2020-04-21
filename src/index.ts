@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import * as  amqp from 'amqplib/callback_api';
 import { Channel, Connection, Message } from 'amqplib/callback_api';
 import { config } from 'dotenv'; config(); //initialize right there the configuration
