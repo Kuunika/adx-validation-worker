@@ -3,8 +3,6 @@ import { Wrapper } from "../../../src/utils/Environment";
 import { expect } from "chai";
 
 describe("#Environment wrapper test", () => {
-    const subject: Wrapper = Wrapper;
-
     it("~should be able to get a value/null given a key", () => {
         expect(Wrapper.get('randomkey')).to.equal(null);
     });
