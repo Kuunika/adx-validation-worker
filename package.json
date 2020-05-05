@@ -34,7 +34,6 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^5.2.15",
     "tortoise": "^1.0.1",
-    "tsyringe": "^4.1.0",
     "typeorm": "^0.2.24",
     "utils": "^0.3.1",
     "winston": "^3.2.1"
