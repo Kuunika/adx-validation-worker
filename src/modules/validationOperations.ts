@@ -7,7 +7,7 @@ import {
 } from "../interfaces";
 import { persistValidationFailures } from ".";
 import { Sequelize } from "sequelize";
-import { appendFileSync, closeSync, fstat, openSync } from "fs";
+import { appendFileSync } from "fs";
 import { sendToLogQueue } from "./queueOperations";
 import { ProductMasterClient } from "./products/product-master.client";
 import { MasterHealthFacilityClient } from "./facilities/master-health-facility.client";
