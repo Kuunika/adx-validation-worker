@@ -97,6 +97,7 @@ export default async function(
     message: JSON.stringify({ message: "Finished content validation", service })
   });
   await updateMigration(sequelize, migrationId, "uploadedAt", Date.now());
+
   const dataElementsToMigrate = await persistMigrationDataElements(
     sequelize,
     migrationDataElements
@@ -121,6 +122,11 @@ export default async function(
       payload.description
     );
   }
+
+  if (dataElementsToMigrate.length < 1) {
+    return;
+  }
+
   sendToLogQueue({
     ...queueMessageWithClient,
     message: JSON.stringify({
@@ -128,10 +134,9 @@ export default async function(
       service
     })
   });
-  if (dataElementsToMigrate.length < 1) {
-    return;
-  }
+
   recordValidationStatus(sequelize, migration.get("id"), true);
+
   sendToMigrationQueue(
     migration.id,
     queueMessage.channelId,
