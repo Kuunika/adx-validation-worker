@@ -5,10 +5,17 @@ import {
   ValidationResult,
   QueueMessage
 } from "../interfaces";
-import { getProductData, getFacilityData, persistValidationFailures } from ".";
+import { persistValidationFailures } from ".";
 import { Sequelize } from "sequelize";
-import { appendFileSync } from "fs";
+import { appendFileSync, closeSync, fstat, openSync } from "fs";
 import { sendToLogQueue } from "./queueOperations";
+import { ProductMasterClient } from "./products/product-master.client";
+import { MasterHealthFacilityClient } from "./facilities/master-health-facility.client";
+import { getDHIS2OUCode } from "./facilities/helpers";
+import { getProductDHIS2Code } from "./products/helpers";
+
+const productMasterClient = new ProductMasterClient();
+const mhfrClient = new MasterHealthFacilityClient();
 
 export async function createMappedPayload(
   sequelize: Sequelize,
@@ -22,7 +29,7 @@ export async function createMappedPayload(
   let validationError = false;
 
   const pushToValidationFailures = async (reason: string) => {
-    appendFileSync(`data/${fileName}`, reason);
+    appendFileSync(`logs/${fileName}`, reason);
     validationFailures.push({
       fileName,
       migrationId,
@@ -41,27 +48,20 @@ export async function createMappedPayload(
         service: "validation"
       })
     });
-    const facilityData = await getFacilityData(
-      sequelize,
-      facility["facility-code"],
-      message.clientId
-    );
-    if (facilityData) {
-      const { organizationUnitCode, facilityId } = facilityData;
+    const facilityData = await mhfrClient.findFacilityByCode(facility['facility-code']);
+
+    if (facilityData && getDHIS2OUCode(facilityData)) {
+      const organizationUnitCode = getDHIS2OUCode(facilityData);
+      const facilityId = facilityData.facility_code;
       for (const facilityValue of facility.values) {
-        const productData = await getProductData(
-          sequelize,
-          facilityValue["product-code"],
-          message.clientId
-        );
-        if (productData) {
-          const { dataElementCode, productId } = productData;
+        const productData = await productMasterClient.findProductByCode(facilityValue['product-code'], message.clientId);
+        if (productData && getProductDHIS2Code(productData))  {
+          const dataElementCode = getProductDHIS2Code(productData);
           const mappedPayload = {
             dataElementCode,
             organizationUnitCode,
             value: facilityValue.value,
             migrationId,
-            productId,
             facilityId,
             isProcessed: false,
             reportingPeriod: payload["reporting-period"]
