@@ -8,7 +8,7 @@ export class MasterHealthFacilityClient {
     private logger: StdLogger = new StdLogger('MHFR Client');
 
     async findFacilityByCode(code: string): Promise<Facility|null> {
-        const host = Wrapper.get<string>('MHFR_HOST');
+        const host = Wrapper.get<string>('AVW_MHFR_URL');
         const facilityPath = `${host}/Facilities/findByCode/${code}`;
         try {
             this.logger.debug(`Attempting to find facility ${facilityPath}.`)
