@@ -36,7 +36,7 @@ export class Logger {
       key: process.env.AVW_PUSHER_KEY || '',
       secret: process.env.AVW_PUSHER_SECRET || '',
       cluster: process.env.AVW_PUSHER_CLUSTER || '',
-      encrypted: Boolean(process.env.AVW_PUSHER_ENCRYPTED) || true
+      useTLS: Boolean(process.env.AVW_PUSHER_ENCRYPTED) || true
     });
   }
   info(message: string) {
