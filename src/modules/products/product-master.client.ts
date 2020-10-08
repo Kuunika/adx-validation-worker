@@ -9,7 +9,7 @@ export class ProductMasterClient {
     private logger: StdLogger = new StdLogger('Product Master Client');
 
     async findProductByCode(code: string, client: string): Promise<Product|null> {
-        const host = Wrapper.get<string>('PRODUCT_MASTER_HOST');
+        const host = Wrapper.get<string>('AVW_PRODUCT_MASTER_URL');
         const src = getProductMasterSrc(client);
         const srcQuery = src ? `?system=${src}` : '';
         const productPath = `${host}/products/${code}${srcQuery}`;
