@@ -1,5 +1,7 @@
 # ADX Validation Worker
 
+![version](https://img.shields.io/github/package-json/v/Kuunika/adx-validation-worker?color=green&style=for-the-badge)
+
 ## Dependencies
 
 - [NodeJS > v10.12](https://nodejs.org/en/download/ "node")
