@@ -143,4 +143,6 @@ export default async function(
     queueMessage.clientId,
     payload.description
   );
+
+  console.log(`Migration for ${queueMessage.clientId} under channel ${queueMessage.channelId} validated successfully.`);
 }
