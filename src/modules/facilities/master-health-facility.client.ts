@@ -7,7 +7,7 @@ import { MasterHealthFacilityClientGatewayException } from './master-health-faci
 export class MasterHealthFacilityClient {
     async findFacilityByCode(code: string): Promise<Facility|null> {
         const host = Wrapper.get<string>('AVW_MHFR_URL');
-        const facilityPath = `${host}/Facilities/${code}`;
+        const facilityPath = `${host}/Facilities/findByCode/${code}`;
         try {
             LOGGER.info(`Attempting to find facility ${facilityPath}.`);
             const facility = (await Axios.get(facilityPath)).data;
