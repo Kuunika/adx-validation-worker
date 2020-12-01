@@ -1,3 +1,5 @@
+import { Sequelize } from "sequelize";
+import { appendFileSync } from "fs";
 import {
   PostPayload,
   MigrationDataElement,
@@ -5,10 +7,16 @@ import {
   ValidationResult,
   QueueMessage
 } from "../interfaces";
-import { getProductData, getFacilityData, persistValidationFailures } from ".";
-import { Sequelize } from "sequelize";
-import { appendFileSync } from "fs";
+import { persistValidationFailures } from ".";
 import { sendToLogQueue } from "./queueOperations";
+import { ProductMasterClient } from "./products/product-master.client";
+import { MasterHealthFacilityClient } from "./facilities/master-health-facility.client";
+import { LOGGER } from './logging/winston.logger';
+import { getDHIS2OUCode } from "./facilities/helpers";
+import { getProductDHIS2Code } from "./products/helpers";
+
+const productMasterClient = new ProductMasterClient();
+const mhfrClient = new MasterHealthFacilityClient();
 
 export async function createMappedPayload(
   sequelize: Sequelize,
@@ -22,7 +30,7 @@ export async function createMappedPayload(
   let validationError = false;
 
   const pushToValidationFailures = async (reason: string) => {
-    appendFileSync(`data/${fileName}`, reason);
+    appendFileSync(`logs/${fileName}`, reason);
     validationFailures.push({
       fileName,
       migrationId,
@@ -41,44 +49,40 @@ export async function createMappedPayload(
         service: "validation"
       })
     });
-    const facilityData = await getFacilityData(
-      sequelize,
-      facility["facility-code"],
-      message.clientId
-    );
-    if (facilityData) {
-      const { organizationUnitCode, facilityId } = facilityData;
+    LOGGER.info(`Looking up facility ${facility['facility-code']}.`);
+
+    const facilityData = await mhfrClient.findFacilityByCode(facility['facility-code']);
+
+    if (facilityData && getDHIS2OUCode(facilityData)) {
+      LOGGER.info(`Found facility ${facility['facility-code']}.`);
+      const organizationUnitCode = getDHIS2OUCode(facilityData);
+      const facilityId = facilityData.facility_code;
       for (const facilityValue of facility.values) {
-        const productData = await getProductData(
-          sequelize,
-          facilityValue["product-code"],
-          message.clientId
-        );
-        if (productData) {
-          const { dataElementCode, productId } = productData;
+        LOGGER.info(`Looking up product ${facilityValue['product-code']}`);
+        const productData = await productMasterClient.findProductByCode(facilityValue['product-code'], message.clientId);
+        if (productData && getProductDHIS2Code(productData)) {
+          LOGGER.info(`Found product ${facilityValue['product-code']}`);
+          const dataElementCode = getProductDHIS2Code(productData);
           const mappedPayload = {
             dataElementCode,
             organizationUnitCode,
             value: facilityValue.value,
             migrationId,
-            productId,
             facilityId,
             isProcessed: false,
             reportingPeriod: payload["reporting-period"]
           };
           mappedPayloads.push(mappedPayload);
         } else {
+          LOGGER.error(`Could not find product ${facilityValue['product-code']}'s data element code.`);
+          await pushToValidationFailures(`Failed to find dataElement for ${facilityValue["product-code"]}`);
           validationError = true;
-          await pushToValidationFailures(
-            `Failed to find dataElement for ${facilityValue["product-code"]}`
-          );
         }
       }
     } else {
+      LOGGER.error(`Could not find facility ${facility['facility-code']}'s organisation unit code.`);
+      await pushToValidationFailures(`Failed to find organizationUnitCode for ${facility["facility-code"]}`);
       validationError = true;
-      await pushToValidationFailures(
-        `Failed to find organizationUnitCode for ${facility["facility-code"]}`
-      );
     }
   }
   if (validationFailures.length > 0) {

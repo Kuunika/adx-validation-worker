@@ -4,8 +4,7 @@ export interface MigrationDataElement {
   organizationUnitCode: string;
   value: number;
   migrationId: number;
-  productId: number;
-  facilityId: number;
+  facilityId: string;
   reportingPeriod: string;
   isProcessed: boolean;
   migratedAt?: string;

@@ -19,11 +19,13 @@ import { PayloadSchema } from "./schemas";
 import * as Joi from "joi";
 const utils = require("utils")._;
 
+import { LOGGER } from './modules/logging/winston.logger';
+
 export default async function(
   sequelize: Sequelize,
-  logger: Logger,
+  _logger: Logger,
   queueMessage: QueueMessage
-) {
+): Promise<void> {
   const service = "validation";
   const queueMessageWithClient = {
     ...queueMessage,
@@ -32,7 +34,7 @@ export default async function(
   const clientId = await getClientId(sequelize, queueMessage.clientId);
 
   if (!clientId) {
-    console.log("Failed to find client in the validation worker, exiting");
+    LOGGER.error(`Failed to find client with id ${queueMessage.clientId} in the validation worker.`);
     return;
   }
 
@@ -43,13 +45,13 @@ export default async function(
   );
   const migrationId = migration.get("id");
   if (!migration) {
-    console.log("Failed to find migration, exiting");
+    LOGGER.error(`Failed to create migration for channel ${queueMessage.channelId}.`);
     return;
   }
   const payloadFile = `${process.env.AVW_PAYLOADS_ROOT_DIR}/${queueMessage.channelId}.adx`;
   const payloadFileContent = utils.tryRead(payloadFile);
   if (!payloadFileContent) {
-    logger.info("failed to read the contents of the payload file specified");
+    LOGGER.error(`Failed to read the contents of the payload file ${payloadFile}.`);
     return;
   }
   const payload = JSON.parse(payloadFileContent);
@@ -97,6 +99,7 @@ export default async function(
     message: JSON.stringify({ message: "Finished content validation", service })
   });
   await updateMigration(sequelize, migrationId, "uploadedAt", Date.now());
+
   const dataElementsToMigrate = await persistMigrationDataElements(
     sequelize,
     migrationDataElements
@@ -121,6 +124,11 @@ export default async function(
       payload.description
     );
   }
+
+  if (dataElementsToMigrate.length < 1) {
+    return;
+  }
+
   sendToLogQueue({
     ...queueMessageWithClient,
     message: JSON.stringify({
@@ -128,14 +136,15 @@ export default async function(
       service
     })
   });
-  if (dataElementsToMigrate.length < 1) {
-    return;
-  }
+
   recordValidationStatus(sequelize, migration.get("id"), true);
+
   sendToMigrationQueue(
     migration.id,
     queueMessage.channelId,
     queueMessage.clientId,
     payload.description
   );
+
+  LOGGER.info(`Migration for ${queueMessage.clientId} under channel ${queueMessage.channelId} validated successfully.`);
 }

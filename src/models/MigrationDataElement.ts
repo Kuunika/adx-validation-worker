@@ -11,9 +11,8 @@ import {
 const tableName = 'Migrationdataelements';
 
 const fields: ModelAttributes = {
-  productId: BIGINT,
   migrationId: BIGINT,
-  facilityId: BIGINT,
+  facilityId: STRING,
   value: BIGINT,
   dataElementCode: STRING,
   organizationUnitCode: STRING,
