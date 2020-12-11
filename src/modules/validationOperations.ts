@@ -51,7 +51,7 @@ export async function createMappedPayload(
     });
     LOGGER.info(`Looking up facility ${facility['facility-code']}.`);
 
-    const facilityData = await mhfrClient.findFacilityByCode(facility['facility-code']);
+    const facilityData = await mhfrClient.findFacilityByCode(facility['facility-code'], message.clientId);
 
     if (facilityData && getDHIS2OUCode(facilityData)) {
       LOGGER.info(`Found facility ${facility['facility-code']}.`);
