@@ -29,11 +29,15 @@ const main = async () => {
         if (!message) {
           return
         }
-        const queueMessage: QueueMessage = JSON.parse(message.content.toString());
-        const logger = new Logger(queueMessage.channelId);
-        //Actual implementation
-        await queueConsumer(sequelize, logger, queueMessage);
-        await channel.ack(message);
+        try {
+          const queueMessage: QueueMessage = JSON.parse(message.content.toString());
+          const logger = new Logger(queueMessage.channelId);
+          //Actual implementation
+          await queueConsumer(sequelize, logger, queueMessage);
+          channel.ack(message);
+        } catch (e) {
+          console.error(e.message);
+        }
       }, { noAck: false });
     });
   });
