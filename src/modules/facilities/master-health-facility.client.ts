@@ -1,4 +1,5 @@
 import Axios, { AxiosError } from 'axios';
+import AxiosRetry from 'axios-retry';
 import { Wrapper } from "../config/wrapper";
 import { LOGGER } from '../logging/winston.logger';
 import { Facility } from "./facility.interface";
@@ -6,6 +7,12 @@ import { RegexMods, SystemNames } from '../../common/constants';
 import { MasterHealthFacilityClientGatewayException } from './master-health-facility-client.exception';
 
 export class MasterHealthFacilityClient {
+    private MAX_RETRIES = 3;
+
+    constructor() {
+        AxiosRetry(Axios, { retries: this.MAX_RETRIES })
+    }
+
     async findFacilityByCode(code: string, system: string): Promise<Facility|null> {
         const host = Wrapper.get<string>('AVW_MHFR_URL');
         const facilityPath = `${host}${resourcePath(code, system)}`;
