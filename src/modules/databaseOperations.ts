@@ -8,7 +8,7 @@ import {
   createValidationFailureModel
 } from '../models';
 import { FacilityData, ProductData, MigrationDataElement, ValidationFailure } from '../interfaces';
-import * as moment from 'moment';
+import moment = require('moment');
 
 //model helpers
 export async function recordStartMigration(sequelize: Sequelize, clientId: number, channelId: string) {
