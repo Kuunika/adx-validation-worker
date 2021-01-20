@@ -14,10 +14,4 @@ const _winstonLogger = createLogger({
     ]
 });
 
-if (process.env.NODE_ENV !== 'production') {
-    _winstonLogger.add(new Transports.Console({
-        format: _defaultFormat,
-    }));
-}
-
 export const LOGGER = _winstonLogger;

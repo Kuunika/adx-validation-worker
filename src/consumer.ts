@@ -98,15 +98,19 @@ export default async function(
     ...queueMessageWithClient,
     message: JSON.stringify({ message: "Finished content validation", service })
   });
+
   await updateMigration(sequelize, migrationId, "uploadedAt", Date.now());
 
   const dataElementsToMigrate = await persistMigrationDataElements(
     sequelize,
     migrationDataElements
-  );
-  if (!dataElementsToMigrate) {
+  ) || [];
+
+  if (!dataElementsToMigrate.length) {
+    LOGGER.info(`Migration for ${queueMessage.clientId} under channel ${queueMessage.channelId} finished. No elements to migrate.`);
     return;
   }
+
   const totalDataElements = dataElementsToMigrate.length;
   await updateMigration(
     sequelize,
@@ -123,10 +127,6 @@ export default async function(
       queueMessage.clientId,
       payload.description
     );
-  }
-
-  if (dataElementsToMigrate.length < 1) {
-    return;
   }
 
   sendToLogQueue({

@@ -1,4 +1,5 @@
 import Axios, { AxiosError } from 'axios';
+import AxiosRetry from 'axios-retry';
 import { Wrapper } from "../config/wrapper";
 import { LOGGER } from '../logging/winston.logger';
 import { ProductMasterClientGatewayException } from './product-master-client-gateway.exception';
@@ -6,6 +7,12 @@ import { Product } from "./product.interface";
 import { getProductMasterSrc } from './helpers';
 
 export class ProductMasterClient {
+    private MAX_RETRIES = 3;
+
+    constructor() {
+        AxiosRetry(Axios, { retries: this.MAX_RETRIES });
+    }
+
     async findProductByCode(code: string, client: string): Promise<Product|null> {
         const host = Wrapper.get<string>('AVW_PRODUCT_MASTER_URL');
         const src = getProductMasterSrc(client);

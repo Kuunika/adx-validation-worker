@@ -8,7 +8,7 @@
   "keywords": [],
   "scripts": {
     "test": "mocha -r ts-node/register **/*.spec.ts",
-    "start": "npx ts-node src/index.ts"
+    "start": "node --max_old_space_size=4096 -r ts-node/register src/index.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -38,6 +38,7 @@
     "tortoise": "^1.0.1",
     "typeorm": "^0.2.24",
     "utils": "^0.3.1",
-    "winston": "^3.3.3"
+    "winston": "^3.3.3",
+    "axios-retry": "^3.1.9"
   }
 }

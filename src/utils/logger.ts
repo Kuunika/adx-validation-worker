@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import * as Pusher from 'pusher';
+import Pusher = require('pusher');
 
 const { createLogger, format, transports } = winston;
 
