@@ -2,7 +2,7 @@ export interface Facility {
     facility_code: string;
     facility_code_dhis2: null;
     facility_code_openlmis: null;
-    facility_code_mapping: FacilityCodeMapping[];
+    facility_code_mapping: FacilityCodeMapping[] | null;
     registration_number: string;
     facility_name: string;
     common_name: string;
