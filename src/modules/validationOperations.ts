@@ -23,7 +23,7 @@ export async function createMappedPayload(
   message: QueueMessage
 ): Promise<ValidationResult> {
   const FACILITIES_CACHE = await createFacilitiesCache(message.clientId);
-  const PRODUCT_CACHE = await createCache();
+  const PRODUCT_CACHE = await createCache(message.clientId);
   const MAX_PACKET_SIZE = 1000;
 
   const { facilities } = payload;
