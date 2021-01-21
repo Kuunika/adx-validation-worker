@@ -18,16 +18,6 @@ const fake: Facility = {
       code: "LL4040",
       system: "OpenLMIS",
     },
-    {
-      url: "https://lmis.health.gov.mw",
-      code: "LL4040",
-      system: "OpenLMIS",
-    },
-    {
-      url: "https://www.hiv.health.gov.mw/",
-      code: "702",
-      system: "DHAMIS",
-    },
   ],
   registration_number: "MCM/C/94",
   facility_name: "ABC Comm. Hospital",
@@ -55,16 +45,6 @@ const fakeWithoutOUCode: Facility = {
       url: "https://lmis.health.gov.mw",
       code: "LL4040",
       system: "OpenLMIS",
-    },
-    {
-      url: "https://lmis.health.gov.mw",
-      code: "LL4040",
-      system: "OpenLMIS",
-    },
-    {
-      url: "https://www.hiv.health.gov.mw/",
-      code: "702",
-      system: "DHAMIS",
     },
   ],
   registration_number: "MCM/C/94",
@@ -115,6 +95,11 @@ describe("#Facility code fetch", () => {
   it('should return the client\'s code if the client is a special case', () => {
     const code = getFacilityCode(fake, 'openlmis');
     expect(code).to.equal('LL4040');
+  })
+
+  it('should return the facility code if the client\'s mapping is not present', () => {
+    const code = getFacilityCode(fake, 'dhamis');
+    expect(code).to.equal(fake.facility_code);
   })
 
   it('should return null if the facility does not have code mappings', () => {
