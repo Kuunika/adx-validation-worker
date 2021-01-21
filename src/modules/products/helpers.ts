@@ -14,3 +14,10 @@ export function getProductDHIS2Code(product: Product): string {
     if (code) return code.systemProductCode;
     return '';
 }
+
+export function getProductCode(product: Product, client: string): string|null {
+    if (!product.mappings.length) return null;
+    const regex = new RegExp(client, RegexMods.CASE_INSENSITIVE);
+    const key = product.mappings.find(m => regex.test(m.systemName));
+    return key ? key.systemProductCode : product.productCode;
+}
