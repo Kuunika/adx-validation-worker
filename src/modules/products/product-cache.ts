@@ -2,6 +2,7 @@ import { Product } from "../products/product.interface";
 import { Wrapper } from "../config/wrapper";
 import Axios from "axios";
 import AxiosRetry from "axios-retry";
+import { getProductCode } from "./helpers";
 
 type ProductCache = {
   [k in keyof any]: Product;
@@ -17,7 +18,7 @@ type ProductMasterProducts = {
 const MAX_RETRIES = 3;
 AxiosRetry(Axios, { retries: MAX_RETRIES });
 
-export async function createCache(): Promise<ProductCache> {
+export async function createCache(client: string): Promise<ProductCache> {
   const cache: ProductCache = {};
   let products: Array<Product> = [];
   let currentPage = 1;
@@ -34,7 +35,8 @@ export async function createCache(): Promise<ProductCache> {
 
   if (products.length) {
     products.forEach((product): void => {
-      cache[product.productCode] = product;
+      const key = getProductCode(product, client);
+      if (key) cache[key] = product;
     });
   }
 
